@@ -1,3 +1,4 @@
+# webhook.py
 import asyncio
 import logging
 from flask import Flask, request, jsonify, Response
@@ -9,16 +10,11 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-@app.before_request
-def init_bot():
+async def ensure_ready():
     if not application._initialized:
-        loop = asyncio.get_event_loop()
-        if loop.is_closed():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        loop.run_until_complete(application.initialize())
-        loop.run_until_complete(application.start())
-        logger.info("🤖 Bot Application initialized & started (webhook mode)")
+        await application.initialize()
+        await application.start()
+        logger.info("🤖 Application initialized & started")
 
 @app.route("/", methods=["GET"])
 def home():
@@ -28,18 +24,23 @@ def home():
 def webhook():
     if not request.is_json:
         return jsonify({"error": "invalid content type"}), 400
-
     data = request.get_json(force=True)
     logger.info("📩 Incoming update: %s", data)
 
     try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(ensure_ready())
+
         update = Update.de_json(data, application.bot)
-        loop = asyncio.get_event_loop()
         loop.run_until_complete(application.process_update(update))
         logger.info("✅ Update processed sukses: %s", data.get("update_id"))
+
     except Exception as e:
         logger.exception("❌ Webhook error: %s", e)
         return jsonify({"error": "internal error", "detail": str(e)}), 500
+    finally:
+        loop.close()
 
     return jsonify({"status": "ok"}), 200
 
