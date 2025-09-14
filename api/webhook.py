@@ -21,6 +21,14 @@ def _start_background_loop(loop: asyncio.AbstractEventLoop):
 _thread = threading.Thread(target=_start_background_loop, args=(_loop,), daemon=True)
 _thread.start()
 
+# ✅ Init bot sebelum request pertama
+@app.before_first_request
+def init_bot():
+    if not application._initialized:
+        _loop.create_task(application.initialize())
+        _loop.create_task(application.start())
+        logger.info("🤖 Bot Application initialized & started (webhook mode)")
+
 
 @app.route("/", methods=["GET"])
 def home():
