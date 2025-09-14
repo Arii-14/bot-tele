@@ -5,7 +5,10 @@
   ],
   "routes": [
     { "src": "/(.*)", "dest": "api/webhook.py" }
+  ],
+  "files": [
+    "ca.pem",
+    "config.py",
+    "main.py"
   ]
 }
-
-
