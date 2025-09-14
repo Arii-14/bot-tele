@@ -1,8 +1,9 @@
-# config.py
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # DB Config
 DB_CONFIG = {
@@ -11,9 +12,8 @@ DB_CONFIG = {
     "database": os.getenv("DB_NAME"),
     "user": os.getenv("DB_USER"),
     "password": os.getenv("DB_PASSWORD"),
-    "ssl_ca": os.getenv("SSL_CA_PATH"),
+    "ssl_ca": os.path.join(BASE_DIR, os.getenv("SSL_CA_PATH", "")),  # absolute path
     "ssl_verify_cert": True,
 }
 
-# Token Telegram (auto-strip biar ga ada spasi/newline)
 TELEGRAM_API_KEY = os.getenv("TELEGRAM_API_KEY", "").strip()
