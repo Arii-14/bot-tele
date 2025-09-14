@@ -29,10 +29,10 @@ logger.info("Background asyncio loop started")
 def home():
     return Response("🤖 Bot is alive on Vercel!", mimetype="text/plain")
 
-@app.route("/", methods=["POST"])
+@app.route("/api/webhook", methods=["POST"])
 def webhook():
     if not request.is_json:
-        logger.warning("Received non-JSON request to /webhook")
+        logger.warning("Received non-JSON request to /api/webhook")
         return jsonify({"error": "invalid content type, expecting application/json"}), 400
 
     try:
